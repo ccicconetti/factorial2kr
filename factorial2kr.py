@@ -16,18 +16,18 @@ import math
 import os
 import sys
 
-import statsmodels.stats.api as sms
-
+from scipy.stats import t
 
 class Observations:
     """
     Collect observations from experiment, compute effects and confidence intervals
     """
 
-    def __init__(self, input_file, verbose):
+    def __init__(self, input_file, verbose, confidence):
         "Load data from file"
 
         self.verbose = verbose
+        self.confidence = confidence
 
         # sum of squared errors
         self.sse = 0.0
@@ -43,6 +43,9 @@ class Observations:
 
         # SSY
         self.ssy = 0.0
+
+        # standard deviation of effects
+        self.std_dev = 0.0
 
         # observations, loaded from file
         self.data = {}
@@ -167,14 +170,18 @@ class Observations:
         # compute SST = SSY - SS0
         self.sst = self.ssy - self.ss_effects[0]
 
+        # compute the standard deviation of effects
+        self.std_dev = math.sqrt(self.sse / (self.r * (self.r - 1))) / (2 ** self.k)
+
     def print_summary(self):
         "Print to output a summary of the analysis"
 
-        print('SSY {}\nSST {}\nSSE {} {}%'.format(
+        print('SSY {}\nSST {}\nSSE {} {}%\nstd dev {}'.format(
             self.ssy,
             self.sst,
             self.sse,
-            round(100.0 * self.sse / self.sst, 2)))
+            round(100.0 * self.sse / self.sst, 2),
+            self.std_dev))
         for ndx in range(0, 2 ** self.k):
             letters = Observations.number_to_letters(ndx, self.k)
             if not letters:
@@ -182,12 +189,18 @@ class Observations:
             relative_importance = \
                 100.0 * self.ss_effects[ndx] / self.sst if ndx > 0 \
                 else 0.0
-            print('q{} {} SS{} {} {}%'.format(
+            ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx])
+            assert len(ci) == 2
+            zero_cross_warning = ' ***' if ci[0] < 0.0 else ''
+            print('q{} {} SS{} {} {}% {}{}'.format(
                 letters,
                 self.effects[ndx],
                 letters,
                 self.ss_effects[ndx],
-                round(relative_importance, 2)))
+                round(relative_importance, 2),
+                (round(ci[0], 2), round(ci[1], 2)),
+                zero_cross_warning
+                ))
 
 ################################################################################
 # Main body
@@ -203,7 +216,7 @@ parser.add_argument(
         "--sign_matrix", action="store_true", default=False,
         help="Only print the sign matrix")
 parser.add_argument(
-        "--alpha", type=float, default=0.05,
+        "--confidence", type=float, default=0.9,
         help="Confidence level")
 parser.add_argument(
         "--verbose", action="store_true", default=False,
@@ -212,7 +225,7 @@ parser.add_argument(
         "infile", nargs="?", help="input file with observations")
 args = parser.parse_args()
 
-assert 0 < args.alpha < 1
+assert 0 < args.confidence < 1
 assert args.k <= 26
 
 if args.sign_matrix:
@@ -225,7 +238,7 @@ if not args.infile:
 if not os.path.isfile(args.infile):
     raise Exception("Input file does not exist: " + args.infile)
 
-observations = Observations(args.infile, verbose=args.verbose)
+observations = Observations(args.infile, verbose=args.verbose, confidence=args.confidence)
 observations.analyze()
 observations.print_summary()
 
