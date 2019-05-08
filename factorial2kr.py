@@ -9,7 +9,6 @@ __credits__ = ["Claudio Cicconetti"]
 __license__ = "GPL"
 __version__ = "1.0.1"
 __maintainer__ = "Claudio Cicconetti"
-__email__ = "c.cicconetti@iit.cnr.it"
 __status__ = "Prototype"
 
 import argparse
