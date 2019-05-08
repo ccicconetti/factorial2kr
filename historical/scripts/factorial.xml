@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<simulation>
+	<name>wifi</name>
+	<description></description>
+	<check_path>/home/vallati/stat-utils/check</check_path>
+	<recover_path>/home/vallati/stat-utils/recover</recover_path>
+	<factorial2kr_path>/home/vallati/stat-utils/factorial2kr</factorial2kr_path>
+	<csv_save_path>/home/vallati/stat-utils/csv_save</csv_save_path>
+	<csv_data>output.csv</csv_data>
+	<ns_path>/home/vallati/sim_factorial/ns-2.33/ns</ns_path>
+	<ns_output></ns_output>
+	<base_scenario>wifi.tcl</base_scenario>
+	<min_run>5</min_run>
+	<max_run>5</max_run>
+	<savefile_dir>savefile</savefile_dir>
+	<factorial_response>wifi_avg_retx wifi_e2e_delay_a wifi_pkt_drop wifi_tpt</factorial_response>
+	<factorial2kr_save>fact</factorial2kr_save>
+	<output_dir>output</output_dir>
+	<check_metrics>wifi_avg_retx wifi_e2e_delay_a wifi_pkt_drop wifi_tpt</check_metrics>
+	<check_conf_level>0.95</check_conf_level>
+	<check_th>0.05</check_th>
+	<multicell>
+		<!--<cellid> </cellid> -->
+		<!--<desc> </desc> -->
+		<param>
+			<name>num-stations</name>
+			<tclname>n-sta</tclname>
+			<value alias="" value="10" level="low"></value>
+			<value alias="" value="50" level="high"></value>
+		</param>
+		<param>
+			<name>packet-size</name>
+			<description>Packet size</description>
+			<tclname>pkt-size</tclname>
+			<value alias="" value="100" level="low"></value>
+			<value alias="" value="1000" level="high"></value>
+		</param>
+		
+		<param>
+                        <name>max-retx</name>
+                        <description>Number of retransmissions</description>
+                        <tclname>n-retx</tclname>
+                        <value alias="" value="2" level="low"></value>
+                        <value alias="" value="7" level="high"></value>
+                </param>
+
+		<param>
+                        <name>min-cwnd</name>
+                        <description>Min contention window backoff</description>
+                        <tclname>cw-min</tclname>
+                        <value alias="" value="7" level="low"></value>
+                        <value alias="" value="63" level="high"></value>
+                </param>
+
+		<param>
+                        <name>max-cwnd</name>
+                        <description>Max contention window backoff</description>
+                        <tclname>cw-max</tclname>
+                        <value alias="" value="63" level="low"></value>
+                        <value alias="" value="1023" level="high"></value>
+                </param>
+	</multicell>
+</simulation>
+
