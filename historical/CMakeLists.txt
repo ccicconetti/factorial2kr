@@ -3,7 +3,7 @@ cmake_policy(SET CMP0048 NEW)
 project(factorial2kr VERSION 1.0.0)
 cmake_minimum_required(VERSION 3.2)
 
-set (CMAKE_CXX_STANDARD 14) # c++14
+set (CMAKE_CXX_STANDARD 11)
 
 set (DISABLE_WARNINGS "-Wno-missing-field-initializers -Wno-unused-parameter -Wnon-virtual-dtor")
 set (COMPILER_COMMON_FLAGS "-Wall -Wextra -Werror -DGTEST_CREATE_SHARED_LIBRARY=1 -DGTEST_LINKED_AS_SHARED_LIBRARY=1 -fPIC ${DISABLE_WARNINGS}")
