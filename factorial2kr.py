@@ -48,6 +48,9 @@ class Observations:
         # standard deviation of effects
         self.std_dev = 0.0
 
+        # residual errors as a function of the predicted response
+        self.residuals = {}
+
         # observations, loaded from file
         self.data = {}
         self.k = 0
@@ -136,10 +139,14 @@ class Observations:
                 total += v
             estimated_response[ndx] = total / self.r
 
-        # compute the SSE
+        # compute the SSE and save the residuals
         for ndx, values in self.data.items():
             for v in values:
-                self.sse += (v - estimated_response[ndx]) ** 2
+                y = estimated_response[ndx]
+                self.sse += (v - y) ** 2
+                if y not in self.residuals:
+                    self.residuals[y] = []
+                self.residuals[y].append(v - y)
 
         if self.verbose:
             for row, values in Observations.sign_matrix(self.k).items():
@@ -202,6 +209,14 @@ class Observations:
                 letter=letters
                 ))
 
+    def save_residuals(self, filename):
+        "Save the scatter plot of residuals to the given file"
+
+        with open(filename, 'w') as outfile:
+            for y, residuals in self.residuals.items():
+                for err in residuals:
+                    outfile.write('{} {}\n'.format(y, err))
+
     @staticmethod
     def print_random(k, r, real_effects):
         "Print a sample input file generated with random observations"
@@ -236,6 +251,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
         "--k", type=int, default=2,
         help="Number of parameters")
+parser.add_argument(
+        "--residuals", type=str, default='',
+        help="Name of the file where to save the scatter plot of residuals")
 parser.add_argument(
         "--sign_matrix", action="store_true", default=False,
         help="Only print the sign matrix")
@@ -273,5 +291,8 @@ if not os.path.isfile(args.infile):
 observations = Observations(args.infile, verbose=args.verbose, confidence=args.confidence)
 observations.analyze()
 observations.print_summary()
+
+if args.residuals:
+    observations.save_residuals(args.residuals)
 
 sys.exit(0)
