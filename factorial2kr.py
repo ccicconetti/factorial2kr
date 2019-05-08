@@ -14,6 +14,7 @@ __status__ = "Prototype"
 import argparse
 import math
 import os
+import random
 import sys
 
 from scipy.stats import t
@@ -79,7 +80,7 @@ class Observations:
 
         ret = ''
         for pos in range(0, k):
-            ret += chr(ord('A') + pos)
+            ret += Observations.number_to_letter(1 << pos, k)
         ret += '\n'
 
         for values in Observations.sign_matrix(k).values():
@@ -99,7 +100,7 @@ class Observations:
         return int(number % 2)
 
     @staticmethod
-    def number_to_letters(number, k):
+    def number_to_letter(number, k):
         "Return a string representing which combination of effects is considered"
 
         ret = ''
@@ -183,7 +184,7 @@ class Observations:
             round(100.0 * self.sse / self.sst, 2),
             self.std_dev))
         for ndx in range(0, 2 ** self.k):
-            letters = Observations.number_to_letters(ndx, self.k)
+            letters = Observations.number_to_letter(ndx, self.k)
             if not letters:
                 letters = '0'
             relative_importance = \
@@ -191,16 +192,39 @@ class Observations:
                 else 0.0
             ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx])
             assert len(ci) == 2
-            zero_cross_warning = ' ***' if ci[0] < 0.0 else ''
-            print('q{} {} SS{} {} {}% {}{}'.format(
-                letters,
+            zero_cross_warning = ' ***' if ci[0] < 0.0 < ci[1] else ''
+            print('q{letter} {} SS{letter} {} {}% {}{}'.format(
                 self.effects[ndx],
-                letters,
                 self.ss_effects[ndx],
                 round(relative_importance, 2),
                 (round(ci[0], 2), round(ci[1], 2)),
-                zero_cross_warning
+                zero_cross_warning,
+                letter=letters
                 ))
+
+    @staticmethod
+    def print_random(k, r, real_effects):
+        "Print a sample input file generated with random observations"
+
+        random.seed()
+
+        for values in Observations.sign_matrix(k).values():
+            coeffs = []
+            for col in range(0, k):
+                if Observations.number_to_letter(2 ** col, k) in real_effects \
+                   and values[2 ** col] > 0:
+                    coeffs.append(1.0)
+                else:
+                    coeffs.append(0.0)
+
+            line = ''
+            for _ in range(0, r):
+                value = 0.0
+                for c in coeffs:
+                    value += c * 10  + random.random()
+
+                line += '{} '.format(value)
+            print(line)
 
 ################################################################################
 # Main body
@@ -222,6 +246,11 @@ parser.add_argument(
         "--verbose", action="store_true", default=False,
         help="Verbose output")
 parser.add_argument(
+        "--random", type=str, default='',
+        help=("Generate a random input file whose observations depend on "
+              "the list of the given effects, e.g. --random AC means that "
+              "only A and C parameters have an effect on the metric of interest"))
+parser.add_argument(
         "infile", nargs="?", help="input file with observations")
 args = parser.parse_args()
 
@@ -230,6 +259,9 @@ assert args.k <= 26
 
 if args.sign_matrix:
     print(Observations.sign_table(args.k))
+    sys.exit(0)
+elif args.random:
+    Observations.print_random(args.k, 10, args.random)
     sys.exit(0)
 
 if not args.infile:
