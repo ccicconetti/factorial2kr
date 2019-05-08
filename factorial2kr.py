@@ -17,7 +17,7 @@ import os
 import random
 import sys
 
-from scipy.stats import t
+from scipy.stats import t, norm
 
 class Observations:
     """
@@ -217,6 +217,30 @@ class Observations:
                 for err in residuals:
                     outfile.write('{} {}\n'.format(y, err))
 
+    def save_qqnorm(self, filename):
+        """
+        Save the Q-Q normal plot of the residuals to the given file.
+
+        We use the formula from the 'stats' R package, as also mentioned in Wikipedia:
+        https://en.wikipedia.org/wiki/Normal_probability_plot
+        """
+
+        with open(filename, 'w') as outfile:
+            residuals = []
+            for values in self.residuals.values():
+                for value in values:
+                    residuals.append(value)
+            residuals.sort()
+
+            n = len(residuals)
+            a = 3.0/8 if n <= 10 else 0.5
+            quantiles = []
+            for i in range(1, n + 1):
+                quantiles.append(norm.ppf((i - a) / (n + 1 - 2 * a)))
+
+            for x,y in zip(residuals, quantiles):
+                outfile.write('{} {}\n'.format(x, y))
+
     @staticmethod
     def print_random(k, r, real_effects):
         "Print a sample input file generated with random observations"
@@ -253,10 +277,19 @@ parser.add_argument(
         help="Number of parameters")
 parser.add_argument(
         "--residuals", type=str, default='',
-        help="Name of the file where to save the scatter plot of residuals")
+        help=("Name of the file where to save the scatter plot of residuals. "
+              "Ignore trend if the magnitude of residuals is smaller than 1/10 "
+              "of the magnitude of responses. If the trend goes up or down "
+              "then there are other factors or side effects that are not "
+              "accounted by the current analysis."))
+parser.add_argument(
+        "--qqnorm", type=str, default='',
+        help=("Name of the file where to save the normal Q-Q plot of errors. "
+              "The analysis is statistically significant if the plot is "
+              "approximately linear."))
 parser.add_argument(
         "--sign_matrix", action="store_true", default=False,
-        help="Only print the sign matrix")
+        help="Print the sign matrix and quit")
 parser.add_argument(
         "--confidence", type=float, default=0.9,
         help="Confidence level")
@@ -274,6 +307,9 @@ args = parser.parse_args()
 
 assert 0 < args.confidence < 1
 assert args.k <= 26
+
+if args.sign_matrix and args.random:
+    raise Exception("Cannot specify both --sign_matrix and --random at the same time")
 
 if args.sign_matrix:
     print(Observations.sign_table(args.k))
@@ -294,5 +330,8 @@ observations.print_summary()
 
 if args.residuals:
     observations.save_residuals(args.residuals)
+
+if args.qqnorm:
+    observations.save_qqnorm(args.qqnorm)
 
 sys.exit(0)
