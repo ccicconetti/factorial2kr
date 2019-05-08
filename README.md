@@ -20,3 +20,5 @@ make
 ```
 
 This will generate the executable `src/main`, which is intended to be launched from `scripts/launch.py`, also poorly documented but shipped with a configuration file example `scripts/factorial.xml`.
+
+The tool has been tested under Linux (compiled with g++-5.4.0) and Mac OS X (compiled with Apple LLVM 10.0.1).
