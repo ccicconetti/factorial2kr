@@ -1,3 +1,5 @@
+![banner](docs/social_preview.png)
+
 # factorial2kr
 
 Python script to perform factorial 2^kr analysis.
