@@ -10,10 +10,10 @@ Very briefly, suppose you want to run a number of experiments (e.g., throwing a 
 
 For every parameter select two limit case, in our example:
 
-A. ball weight: 50 grams (-) vs. 100 grams (+)
-B. ball size: 1 cm (-) vs. 3 cm (+)
-C. ball color: white (-) vs. black (+)
-D. weight of the person throwing the ball: 50 kg (-) vs. 80 kg (+)
+- ball weight (A): 50 grams (-) vs. 100 grams (+)
+- ball size (B): 1 cm (-) vs. 3 cm (+)
+- ball color (C): white (-) vs. black (+)
+- weight of the person throwing the ball (C): 50 kg (-) vs. 80 kg (+)
 
 Then you run _r_ experiments for every combination of the above parameters. We have _k = 4_ parameters (A-D), hence 2^_k_ combinations, which is 16. The total number of experiments will be 16 x _r_, e.g., with _r = 10_ it will be 160.
 
