@@ -1,21 +1,21 @@
 # factorial2kr
 
-Python script to perform factorial 2kr analysis.
+Python script to perform factorial 2^kr analysis.
 
 ## Background
 
 For an intro on factorial 2 kr design see slides from Prof. Raj Jain [here](https://www.cs.rice.edu/~johnmc/comp528/lecture-notes/Lecture12_13.pdf) or just ask Google.
 
-Very briefly, suppose you want to run a number of experiments (e.g., throwing a ball) to see what happens to a given metric of your interest (e.g., peak height reached by the ball after bouncing on the floor) and there are a number of parameters that might or might not affect significantly the response of your system (e.g., ball weight, ball size, ball color, weight of the person throwing the ball). Factorial 2kr you design can help identifying _which_ parameters are really important, in a quantitative manner, as follows.
+Very briefly, suppose you want to run a number of experiments (e.g., throwing a ball) to see what happens to a given metric of your interest (e.g., peak height reached by the ball after bouncing on the floor) and there are a number of parameters that might or might not affect significantly the response of your system (e.g., ball weight, ball size, ball color, weight of the person throwing the ball). Factorial 2^k r you design can help identifying _which_ parameters are really important, in a quantitative manner, as follows.
 
 For every parameter select two limit case, in our example:
 
-- ball weight: 50 grams (-) vs. 100 grams (+)
-- ball size: 1 cm (-) vs. 3 cm (+)
-- ball color: white (-) vs. black (+)
-- weight of the person throwing the ball: 50 kg (-) vs. 80 kg (+)
+A. ball weight: 50 grams (-) vs. 100 grams (+)
+B. ball size: 1 cm (-) vs. 3 cm (+)
+C. ball color: white (-) vs. black (+)
+D. weight of the person throwing the ball: 50 kg (-) vs. 80 kg (+)
 
-Then you run _r_ experiments for every combination of the above parameters. We have _k = 4_ parameters, hence 2^_k_ combinations, which is 16. The total number of experiments will be 16 x _r_, e.g., with _r = 10_ it will be 160.
+Then you run _r_ experiments for every combination of the above parameters. We have _k = 4_ parameters (A-D), hence 2^_k_ combinations, which is 16. The total number of experiments will be 16 x _r_, e.g., with _r = 10_ it will be 160.
 
 If you record all the values obtained in a text file, you can then give that to `factorial2kr.py`, which will tell you:
 
@@ -100,7 +100,7 @@ If you want to see how the `factorial2kr` works in pratice you can use the ``--r
 $ ./factorial2kr.py --k 3 --random AC > rnd
 ```
 
-will save in text file `rnd` a file with 8 rows (= 2^3) and 10 columns (this is _r_, which is always 10 in this mode) where the metric of interest is affected by parameters A and C, but not B.
+will save in text file `rnd` a file with 8 rows (= 2^3) and 10 columns (this is _r_, which is always 10 in this mode) where the metric of interest is affected by parameters A and C, but not B. 
 
 The file looks something like this:
 
@@ -117,7 +117,7 @@ The file looks something like this:
 
 ### Normal operation
 
-In this mode you perform factorial 2kr analysis of the effects. Optionally, you may specify that the residual errors are plotted against the estimated response (`--residuals` option) or in a Q-Q normal plot (`--qqnorm` option).
+In this mode you perform factorial 2^k r analysis of the effects. Optionally, you may specify that the residual errors are plotted against the estimated response (`--residuals` option) or in a Q-Q normal plot (`--qqnorm` option).
 
 Let's execute the script on random values generated as illustrated above:
 
@@ -154,7 +154,7 @@ If you want to use the same values used in [this](https://www.cs.rice.edu/~johnm
 ## Heritage preservation
 
 In the directory `historical` you find a mirror of the [Factorial2k](http://cng1.iet.unipi.it/wiki/index.php/Factorial2kr) tool, which can be used
-to realise factorial 2kr design using an unmaintained framework called [ANSWER](http://cng1.iet.unipi.it/wiki/index.php/ANSWER) originally developed as a plug-in of the [Network Simulator - ns2](https://www.isi.edu/nsnam/ns/).
+to realise factorial 2^k r design using an unmaintained framework called [ANSWER](http://cng1.iet.unipi.it/wiki/index.php/ANSWER) originally developed as a plug-in of the [Network Simulator - ns2](https://www.isi.edu/nsnam/ns/).
 
 The framework assumes that the raw data to perform the analysis are stored in binary files serialized using a proprietary undocumented structure.
 
