@@ -13,7 +13,7 @@ For every parameter select two limit case, in our example:
 - ball weight (A): 50 grams (-) vs. 100 grams (+)
 - ball size (B): 1 cm (-) vs. 3 cm (+)
 - ball color (C): white (-) vs. black (+)
-- weight of the person throwing the ball (C): 50 kg (-) vs. 80 kg (+)
+- weight of the person throwing the ball (D): 50 kg (-) vs. 80 kg (+)
 
 Then you run _r_ experiments for every combination of the above parameters. We have _k = 4_ parameters (A-D), hence 2^_k_ combinations, which is 16. The total number of experiments will be 16 x _r_, e.g., with _r = 10_ it will be 160.
 
