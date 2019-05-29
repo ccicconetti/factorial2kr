@@ -201,7 +201,7 @@ class Observations:
             ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx], self.std_dev)
             assert len(ci) == 2
             zero_cross_warning = ' ***' if ci[0] < 0.0 < ci[1] else ''
-            if not self.brief or round(relative_importance,2) > 0:
+            if not self.brief or ndx == 0 or round(relative_importance,2) > 0:
                 print('q{letter} {} SS{letter} {} {}% {}{}'.format(
                     self.effects[ndx],
                     self.ss_effects[ndx],
