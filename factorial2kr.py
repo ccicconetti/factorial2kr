@@ -24,10 +24,11 @@ class Observations:
     Collect observations from experiment, compute effects and confidence intervals
     """
 
-    def __init__(self, input_file, verbose, confidence):
+    def __init__(self, input_file, verbose, brief, confidence):
         "Load data from file"
 
-        self.verbose = verbose
+        self.verbose    = verbose
+        self.brief      = brief
         self.confidence = confidence
 
         # sum of squared errors
@@ -197,17 +198,18 @@ class Observations:
             relative_importance = \
                 100.0 * self.ss_effects[ndx] / self.sst if ndx > 0 \
                 else 0.0
-            ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx])
+            ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx], self.std_dev)
             assert len(ci) == 2
             zero_cross_warning = ' ***' if ci[0] < 0.0 < ci[1] else ''
-            print('q{letter} {} SS{letter} {} {}% {}{}'.format(
-                self.effects[ndx],
-                self.ss_effects[ndx],
-                round(relative_importance, 2),
-                (round(ci[0], 2), round(ci[1], 2)),
-                zero_cross_warning,
-                letter=letters
-                ))
+            if not self.brief or round(relative_importance,2) > 0:
+                print('q{letter} {} SS{letter} {} {}% {}{}'.format(
+                    self.effects[ndx],
+                    self.ss_effects[ndx],
+                    round(relative_importance, 2),
+                    (round(ci[0], 2), round(ci[1], 2)),
+                    zero_cross_warning,
+                    letter=letters
+                    ))
 
     def save_residuals(self, filename):
         "Save the scatter plot of residuals to the given file"
@@ -297,6 +299,9 @@ parser.add_argument(
         "--verbose", action="store_true", default=False,
         help="Verbose output")
 parser.add_argument(
+        "--brief", action="store_true", default=False,
+        help='Only show the factors with sufficient relative importance')
+parser.add_argument(
         "--random", type=str, default='',
         help=("Generate a random input file whose observations depend on "
               "the list of the given effects, e.g. --random AC means that "
@@ -324,7 +329,7 @@ if not args.infile:
 if not os.path.isfile(args.infile):
     raise Exception("Input file does not exist: " + args.infile)
 
-observations = Observations(args.infile, verbose=args.verbose, confidence=args.confidence)
+observations = Observations(args.infile, verbose=args.verbose, brief=args.brief, confidence=args.confidence)
 observations.analyze()
 observations.print_summary()
 
