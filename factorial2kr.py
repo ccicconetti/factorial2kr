@@ -219,7 +219,7 @@ class Observations:
                 print('q{letter} {} SS{letter} {} {} ({}, {}) {}'.format(
                     self.approx(self.effects[ndx]),
                     self.approx(self.ss_effects[ndx]),
-                    self.percent(relative_importance),
+                    self.percent(relative_importance) if ndx > 0 else '',
                     self.approx(ci[0]),
                     self.approx(ci[1]),
                     zero_cross_warning,
@@ -252,7 +252,7 @@ class Observations:
                 print('q{letter} & {} & SS{letter} & {} & {} & ({}, {}) {} \\\\'.format(
                     self.approx(self.effects[ndx]),
                     self.approx(self.ss_effects[ndx]),
-                    self.percent(relative_importance, True),
+                    self.percent(relative_importance, True) if ndx > 0 else '',
                     self.approx(ci[0]),
                     self.approx(ci[1]),
                     zero_cross_warning,
