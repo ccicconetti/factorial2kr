@@ -130,6 +130,18 @@ class Observations:
 
         return ret
 
+    @staticmethod
+    def approx(x):
+        "Return a string version of the input number with 4 significant digits"
+
+        return str.format('{:.3}', x)
+
+    @staticmethod
+    def percent(x):
+        "Return a string version of the input number suitable for percentages"
+
+        return str.format('{:.2%}', x)
+
     def analyze(self):
         "Perform analysis on data"
 
@@ -185,28 +197,29 @@ class Observations:
     def print_summary(self):
         "Print to output a summary of the analysis"
 
-        print('SSY {}\nSST {}\nSSE {} {}%\nstd dev {}'.format(
-            self.ssy,
-            self.sst,
-            self.sse,
-            round(100.0 * self.sse / self.sst, 2),
-            self.std_dev))
+        print('SSY {}\nSST {}\nSSE {} {}\nstd dev {}'.format(
+            self.approx(self.ssy),
+            self.approx(self.sst),
+            self.approx(self.sse),
+            self.percent(self.sse / self.sst),
+            self.approx(self.std_dev)))
         for ndx in range(0, 2 ** self.k):
             letters = Observations.number_to_letter(ndx, self.k)
             if not letters:
                 letters = '0'
             relative_importance = \
-                100.0 * self.ss_effects[ndx] / self.sst if ndx > 0 \
+                self.ss_effects[ndx] / self.sst if ndx > 0 \
                 else 0.0
             ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx], self.std_dev)
             assert len(ci) == 2
-            zero_cross_warning = ' ***' if ci[0] < 0.0 < ci[1] else ''
-            if not self.brief or ndx == 0 or round(relative_importance,2) > 0:
-                print('q{letter} {} SS{letter} {} {}% {}{}'.format(
-                    self.effects[ndx],
-                    self.ss_effects[ndx],
-                    round(relative_importance, 2),
-                    (round(ci[0], 2), round(ci[1], 2)),
+            zero_cross_warning = '***' if ci[0] < 0.0 < ci[1] else ''
+            if not self.brief or ndx == 0 or relative_importance >= 0.1:
+                print('q{letter} {} SS{letter} {} {} ({}, {}) {}'.format(
+                    self.approx(self.effects[ndx]),
+                    self.approx(self.ss_effects[ndx]),
+                    self.percent(relative_importance),
+                    self.approx(ci[0]),
+                    self.approx(ci[1]),
                     zero_cross_warning,
                     letter=letters
                     ))
