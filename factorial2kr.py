@@ -24,11 +24,10 @@ class Observations:
     Collect observations from experiment, compute effects and confidence intervals
     """
 
-    def __init__(self, input_file, verbose, brief, confidence):
+    def __init__(self, input_file, verbose, confidence):
         "Load data from file"
 
         self.verbose    = verbose
-        self.brief      = brief
         self.confidence = confidence
 
         # sum of squared errors
@@ -137,10 +136,13 @@ class Observations:
         return str.format('{:.3}', x)
 
     @staticmethod
-    def percent(x):
+    def percent(x, latex_mode = False):
         "Return a string version of the input number suitable for percentages"
 
-        return str.format('{:.2%}', x)
+        if latex_mode:
+            return str.format('{:.2}\\%', x * 100.0)
+        else:
+            return str.format('{:.2%}', x)
 
     def analyze(self):
         "Perform analysis on data"
@@ -194,7 +196,7 @@ class Observations:
         # compute the standard deviation of effects
         self.std_dev = math.sqrt(self.sse / (self.r * (self.r - 1))) / (2 ** self.k)
 
-    def print_summary(self):
+    def print_summary(self, brief):
         "Print to output a summary of the analysis"
 
         print('SSY {}\nSST {}\nSSE {} {}\nstd dev {}'.format(
@@ -213,7 +215,7 @@ class Observations:
             ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx], self.std_dev)
             assert len(ci) == 2
             zero_cross_warning = '***' if ci[0] < 0.0 < ci[1] else ''
-            if not self.brief or ndx == 0 or relative_importance >= 0.1:
+            if not brief or ndx == 0 or relative_importance >= 0.1:
                 print('q{letter} {} SS{letter} {} {} ({}, {}) {}'.format(
                     self.approx(self.effects[ndx]),
                     self.approx(self.ss_effects[ndx]),
@@ -223,6 +225,40 @@ class Observations:
                     zero_cross_warning,
                     letter=letters
                     ))
+
+    def print_latex(self, brief):
+        "Print to output a summary of the analysis to be included in a LaTeX document"
+
+        print('\\begin{tabular}{|ll|lll|l|}\n\\hline')
+        print(('SSY & {} & SST & {} & & \multirow{{2}}{{*}}{{conf intervals}} \\\\\n'
+               'std dev & {} & SSE & {} & {} & \\\\').format(
+            self.approx(self.ssy),
+            self.approx(self.sst),
+            self.approx(self.std_dev),
+            self.approx(self.sse),
+            self.percent(self.sse / self.sst, True)))
+        print('\\hline')
+        for ndx in range(0, 2 ** self.k):
+            letters = Observations.number_to_letter(ndx, self.k)
+            if not letters:
+                letters = '0'
+            relative_importance = \
+                self.ss_effects[ndx] / self.sst if ndx > 0 \
+                else 0.0
+            ci = t.interval(self.confidence, (2 ** self.k) * (self.r - 1), self.effects[ndx], self.std_dev)
+            assert len(ci) == 2
+            zero_cross_warning = '*' if ci[0] < 0.0 < ci[1] else ''
+            if not brief or ndx == 0 or relative_importance >= 0.1:
+                print('q{letter} & {} & SS{letter} & {} & {} & ({}, {}) {} \\\\'.format(
+                    self.approx(self.effects[ndx]),
+                    self.approx(self.ss_effects[ndx]),
+                    self.percent(relative_importance, True),
+                    self.approx(ci[0]),
+                    self.approx(ci[1]),
+                    zero_cross_warning,
+                    letter=letters
+                    ))
+        print('\\hline\n\\end{tabular}')
 
     def save_residuals(self, filename):
         "Save the scatter plot of residuals to the given file"
@@ -315,6 +351,9 @@ parser.add_argument(
         "--brief", action="store_true", default=False,
         help='Only show the factors with sufficient relative importance')
 parser.add_argument(
+        "--output_type", type=str, default='text',
+        help='Select the output type, one of {text, latex, none}.')
+parser.add_argument(
         "--random", type=str, default='',
         help=("Generate a random input file whose observations depend on "
               "the list of the given effects, e.g. --random AC means that "
@@ -329,6 +368,9 @@ assert args.k <= 26
 if args.sign_matrix and args.random:
     raise Exception("Cannot specify both --sign_matrix and --random at the same time")
 
+if args.output_type not in [ 'text', 'latex', 'none' ]:
+    raise Exception("Choose one of {text, latex, none} as argument of --output-type")
+
 if args.sign_matrix:
     print(Observations.sign_table(args.k))
     sys.exit(0)
@@ -342,9 +384,13 @@ if not args.infile:
 if not os.path.isfile(args.infile):
     raise Exception("Input file does not exist: " + args.infile)
 
-observations = Observations(args.infile, verbose=args.verbose, brief=args.brief, confidence=args.confidence)
+observations = Observations(args.infile, verbose=args.verbose, confidence=args.confidence)
 observations.analyze()
-observations.print_summary()
+
+if args.output_type == 'text':
+    observations.print_summary(args.brief)
+elif args.output_type == 'latex':
+    observations.print_latex(args.brief)
 
 if args.residuals:
     observations.save_residuals(args.residuals)
