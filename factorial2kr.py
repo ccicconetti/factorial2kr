@@ -140,7 +140,7 @@ class Observations:
         "Return a string version of the input number suitable for percentages"
 
         if latex_mode:
-            return str.format('{:.2}\\%', x * 100.0)
+            return str.format('{:.4g}\\%', x * 100.0)
         else:
             return str.format('{:.2%}', x)
 
